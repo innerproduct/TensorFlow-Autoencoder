@@ -4,12 +4,8 @@ from __future__ import print_function
 
 import numpy as np
 import pandas as pd
-#from sklearn import preprocessing
 from sklearn.preprocessing import StandardScaler, RobustScaler
 
-#%matplotlib inline
-#import matplotlib.pyplot as plt
-#import matplotlib.cm as cm
 
 import tensorflow as tf
 
@@ -18,7 +14,6 @@ import time
 now = time.time()
 tag = str(now)
 
-#
 DEBUG = True
 # settings
 LEARNING_RATE = 5e-6
@@ -51,16 +46,12 @@ def normalize(X,has_outliers=True,has_missing=True,is_sparse=True):
         pass
         #data = preprocessing.scale(X,with_centering=False)
     return data
-    #print('data({0[0]},{0[1]})'.format(data.shape))
-    #print (data.head())
+
 inputs = data.iloc[:,1:].values
 inputs = inputs.astype(np.float)
 
 if DEBUG:
     print('finished reading data...')
-
-# convert from [0:255] => [0.0:1.0]
-# inputs = np.multiply(inputs, 1.0 / 255.0)
 
 if DEBUG:
     print('normalizing data...')
@@ -100,9 +91,12 @@ x = tf.placeholder('float', shape=[None,input_size])
 # outputs = labels
 y_ = tf.placeholder('float', shape=[None,input_size])
 
-# To prevent overfitting, we  apply [dropout](https://en.wikipedia.org/wiki/Convolutional_neural_network#Dropout) before the readout layer.
+# To prevent overfitting, we  apply [dropout](https://en.wikipedia.org/wiki/Convolutional_neural_network#Dropout) 
+# before the readout layer.
 # 
-# Dropout removes some nodes from the network at each training stage. Each of the nodes is either kept in the network with probability *keep_prob* or dropped with probability *1 - keep_prob*. After the training stage is over the nodes are returned to the NN with their original weights.
+# Dropout removes some nodes from the network at each training stage. Each of the nodes is either kept in the 
+# network with probability *keep_prob* or dropped with probability *1 - keep_prob*. After the training stage 
+# is over the nodes are returned to the NN with their original weights.
 keep_prob = tf.placeholder('float')
 if DEBUG:
     print('creating W,b,h variables for various layers...')
@@ -149,7 +143,8 @@ if DEBUG:
 y = tf.nn.relu(tf.matmul(h[-1],W[-1]) + b[-1])
 
 # 
-# ADAM optimiser is a gradient based optimization algorithm, based on adaptive estimates, it's more sophisticated than steepest gradient descent and is well suited for problems with large data or many parameters.
+# ADAM optimiser is a gradient based optimization algorithm, based on adaptive estimates, it's more 
+# sophisticated than steepest gradient descent and is well suited for problems with large data or many parameters.
 # cost function
 cross_entropy = -tf.reduce_sum(y_*tf.log(y))
 if DEBUG:
@@ -177,9 +172,11 @@ predict = tf.identity(y)
 # ## Train, validate and predict
 # #### Helper functions
 # 
-# Ideally, we should use all data for every step of the training, but that's expensive. So, instead, we use small "batches" of random data. 
+# Ideally, we should use all data for every step of the training, but that's expensive. So, instead, 
+# we use small "batches" of random data. 
 # 
-# This method is called [stochastic training](https://en.wikipedia.org/wiki/Stochastic_gradient_descent). It is cheaper, faster and gives much of the same result.
+# This method is called [stochastic training](https://en.wikipedia.org/wiki/Stochastic_gradient_descent). 
+# It is cheaper, faster and gives much of the same result.
 epochs_completed = 0
 index_in_epoch = 0
 num_examples = train_inputs.shape[0]
@@ -210,17 +207,21 @@ def next_batch(batch_size):
         assert batch_size <= num_examples
     end = index_in_epoch
     return train_inputs[start:end], train_labels[start:end]
-# Now when all operations for every variable are defined in TensorFlow graph all computations will be performed outside Python environment.
+# Now when all operations for every variable are defined in TensorFlow graph all computations 
+# will be performed outside Python environment.
 # start TensorFlow session
 init = tf.initialize_all_variables()
 sess = tf.InteractiveSession()
 
 sess.run(init)
-# Each step of the loop, we get a "batch" of data points from the training set and feed it to the graph to replace the placeholders.  In this case, it's:  *x, y* and *dropout.*
+# Each step of the loop, we get a "batch" of data points from the training set and feed it to 
+# the graph to replace the placeholders.  In this case, it's:  *x, y* and *dropout.*
 # 
 # Also, once in a while, we check training accuracy on an upcoming "batch".
 # 
-# On the local environment, we recommend [saving training progress](https://www.tensorflow.org/versions/master/api_docs/python/state_ops.html#Saver), so it can be recovered for further training, debugging or evaluation.
+# On the local environment, we recommend [saving training progress]
+# (https://www.tensorflow.org/versions/master/api_docs/python/state_ops.html#Saver), 
+# so it can be recovered for further training, debugging or evaluation.
 # visualisation variables
 train_accuracies = []
 validation_accuracies = []
@@ -283,9 +284,6 @@ test_inputs = test_inputs.astype(np.float)
 # convert from [0:255] => [0.0:1.0]
 test_inputs = normalize(test_inputs) #np.multiply(test_inputs, 1.0 / 255.0)
 
-#print('test_inputs({0[0]},{0[1]})'.format(test_inputs.shape))
-
-
 # predict test set
 output_rows = predict.eval(feed_dict={x: train_inputs, keep_prob: 1.0})
 test_rows = predict.eval(feed_dict={x: test_inputs, keep_prob: 1.0})
@@ -338,14 +336,8 @@ np.savetxt('diff_'+tag+'.csv',
 
 
 # ## Appendix
-# As it was mentioned before, it is good to output some variables for a better understanding of the process. 
+# It is good to output some variables for a better understanding of the process. 
 # 
-# Here we pull an output of the first convolution layer from TensorFlow graph. 32 features are transformed into an image grid, and it's quite interesting to see how filters picked by NN outline characteristics of different digits.
-
-
-#layer1_grid = layer1.eval(feed_dict={x: test_inputs[IMAGE_TO_DISPLAY:IMAGE_TO_DISPLAY+1], keep_prob: 1.0})
-#plt.axis('off')
-#plt.imshow(layer1_grid[0], cmap=cm.seismic )
 
 saver = tf.train.Saver()
 # Save the variables to disk.
@@ -360,3 +352,4 @@ for w_,b_ in zip(W,b):
     print(b_.eval())
 
 sess.close()
+
